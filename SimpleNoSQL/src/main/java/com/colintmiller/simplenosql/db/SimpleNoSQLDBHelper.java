@@ -5,6 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+
+import com.colintmiller.simplenosql.BaseModel;
 import com.colintmiller.simplenosql.DataDeserializer;
 import com.colintmiller.simplenosql.DataFilter;
 import com.colintmiller.simplenosql.DataSerializer;
@@ -125,7 +127,11 @@ public class SimpleNoSQLDBHelper extends SQLiteOpenHelper {
                 String data = cursor.getString(cursor.getColumnIndex(EntityEntry.COLUMN_NAME_DATA));
 
                 NoSQLEntity<T> entity = new NoSQLEntity<T>(bucketId, entityId);
-                entity.setData(deserializer.deserialize(data, clazz));
+                T dataObj = deserializer.deserialize(data, clazz);
+                if(dataObj instanceof BaseModel) {
+                    ((BaseModel) dataObj).setId(entityId);
+                }
+                entity.setData(dataObj);
                 if (filter != null && !filter.isIncluded(entity)) {
                     // skip this item, it's been filtered out.
                     continue;

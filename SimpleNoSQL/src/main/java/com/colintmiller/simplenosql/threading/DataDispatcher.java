@@ -2,6 +2,8 @@ package com.colintmiller.simplenosql.threading;
 
 import android.content.Context;
 import android.os.Process;
+import android.util.Log;
+
 import com.colintmiller.simplenosql.DataComparator;
 import com.colintmiller.simplenosql.NoSQLEntity;
 import com.colintmiller.simplenosql.NoSQLQuery;
@@ -25,6 +27,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class DataDispatcher extends Thread {
 
+    private static final String TAG = DataDispatcher.class.getCanonicalName();
     private boolean hasQuit = false;
     private BlockingQueue<NoSQLQuery<?>> queue;
     private Context context;
@@ -72,18 +75,22 @@ public class DataDispatcher extends Thread {
 
             SimpleNoSQLDBHelper helper = new SimpleNoSQLDBHelper(context, query.getSerializer(), query.getDeserializer());
 
-            switch (query.getOperation()) {
-                case SAVE:
-                    save(query, helper);
-                    break;
-                case DELETE:
-                    delete(query, helper);
-                    break;
-                case RETRIEVE:
-                    retrieve(query, helper);
-                    break;
-                default:
-                    throw new IllegalStateException("Should not have a null operation");
+            try {
+                switch (query.getOperation()) {
+                    case SAVE:
+                        save(query, helper);
+                        break;
+                    case DELETE:
+                        delete(query, helper);
+                        break;
+                    case RETRIEVE:
+                        retrieve(query, helper);
+                        break;
+                    default:
+                        throw new IllegalStateException("Should not have a null operation");
+                }
+            } catch (IllegalStateException e) {
+                Log.e(TAG, e.getMessage(), e);
             }
 
             delivery.notifyObservers(query.getObservers());

@@ -89,7 +89,7 @@ public class DataDispatcher extends Thread {
                     default:
                         throw new IllegalStateException("Should not have a null operation");
                 }
-            } catch (IllegalStateException e) {
+            } catch (Exception e) {
                 Log.e(TAG, e.getMessage(), e);
             }
 

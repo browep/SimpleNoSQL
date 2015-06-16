@@ -24,7 +24,7 @@ public class ExceptionUtils {
         else if(context instanceof Activity) {
             ((SilentExceptionHandler) ((Activity) context).getApplication()).handleSilentException(e);
         } else {
-            Log.e(TAG, "was not able to handle silently with: " + context, new Throwable());
+            Log.e(TAG, "was not able to handle silently with: " + context, new Throwable(e));
         }
     }
 }

@@ -87,7 +87,7 @@ public class NoSQL
      * @return a {@link com.colintmiller.simplenosql.QueryBuilder}.
      */
     public <T> QueryBuilder<T> using(Class<T> clazz) {
-        return withUsing(clazz, singleSerializer, singleDeserializer, queryQueue);
+        return withUsing(clazz, singleSerializer, singleDeserializer, queryQueue, appContext);
     }
 
     /**
@@ -142,8 +142,8 @@ public class NoSQL
         }
     }
 
-    private static <T> QueryBuilder<T> withUsing(Class<T> clazz, DataSerializer serializer, DataDeserializer deserializer, BlockingQueue<NoSQLQuery<?>> queue) {
-        QueryBuilder<T> builder = new QueryBuilder<T>(clazz, queue);
+    private static <T> QueryBuilder<T> withUsing(Class<T> clazz, DataSerializer serializer, DataDeserializer deserializer, BlockingQueue<NoSQLQuery<?>> queue, Context appContext) {
+        QueryBuilder<T> builder = new QueryBuilder<T>(clazz, queue, appContext);
         if (serializer != null) {
             builder.serializer(serializer);
         }

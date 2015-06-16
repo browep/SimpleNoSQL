@@ -1,6 +1,13 @@
 package com.colintmiller.simplenosql;
 
+import android.content.Context;
+import android.text.TextUtils;
+import android.util.Log;
+
+import com.colintmiller.simplenosql.toolbox.ExceptionUtils;
+
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
@@ -46,14 +53,18 @@ import java.util.concurrent.BlockingQueue;
  */
 public class QueryBuilder<T> {
 
+    private static final String TAG = QueryBuilder.class.getCanonicalName();
     private NoSQLQuery<T> query;
     private BlockingQueue<NoSQLQuery<?>> dispatchQueue;
+    private Context appContext;
 
     /**
      * Construct a new QueryBuilder for performing a NoSQL operation.
      * @param clazz related to this operation.
+     * @param appContext
      */
-    public QueryBuilder(Class<T> clazz, BlockingQueue<NoSQLQuery<?>> queue) {
+    public QueryBuilder(Class<T> clazz, BlockingQueue<NoSQLQuery<?>> queue, Context appContext) {
+        this.appContext = appContext;
         this.query = new NoSQLQuery<T>(clazz);
         this.dispatchQueue = queue;
     }
@@ -242,7 +253,28 @@ public class QueryBuilder<T> {
      * @return a CancellableOperation for canceling the in-flight request before it's finished.
      */
     public CancellableOperation save(List<NoSQLEntity<T>> entities) {
-        query.save(entities);
+
+        List<NoSQLEntity<T>> vettedEntities = new LinkedList<>();
+
+        // iterate over the entities, check to see that they all have id's
+        for (NoSQLEntity<T> noSQLEntity : entities) {
+            if (noSQLEntity.getId() == null || TextUtils.isEmpty(noSQLEntity.getId())) {
+                String msg = null;
+                try {
+                    msg = query.getSerializer().serialize(noSQLEntity.getData());
+                } catch (Exception e) {
+                    Log.e(TAG, e.getMessage(), e);
+                }
+                IllegalArgumentException exception = new IllegalArgumentException(msg);
+                Log.e(TAG, exception.getMessage(), exception);
+                ExceptionUtils.handleSilentException(appContext, exception);
+
+            } else {
+                vettedEntities.add(noSQLEntity);
+            }
+        }
+
+        query.save(vettedEntities);
         dispatchQueue.add(query);
         return query;
     }

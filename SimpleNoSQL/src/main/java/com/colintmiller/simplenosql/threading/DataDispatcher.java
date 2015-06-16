@@ -8,6 +8,7 @@ import com.colintmiller.simplenosql.DataComparator;
 import com.colintmiller.simplenosql.NoSQLEntity;
 import com.colintmiller.simplenosql.NoSQLQuery;
 import com.colintmiller.simplenosql.db.SimpleNoSQLDBHelper;
+import com.colintmiller.simplenosql.toolbox.ExceptionUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -91,6 +92,7 @@ public class DataDispatcher extends Thread {
                 }
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage(), e);
+                ExceptionUtils.handleSilentException(context, e);
             }
 
             delivery.notifyObservers(query.getObservers());

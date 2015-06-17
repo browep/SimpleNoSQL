@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import com.colintmiller.simplenosql.BaseModel;
 import com.colintmiller.simplenosql.DataDeserializer;
@@ -24,6 +25,7 @@ import static com.colintmiller.simplenosql.db.SimpleNoSQLContract.EntityEntry;
  */
 public class SimpleNoSQLDBHelper extends SQLiteOpenHelper {
 
+    private static final String TAG = SimpleNoSQLDBHelper.class.getCanonicalName();
     private DataSerializer serializer;
     private DataDeserializer deserializer;
 
@@ -60,8 +62,17 @@ public class SimpleNoSQLDBHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // TODO: Be non-destructive when doing a real upgrade.
-        db.execSQL(SQL_DELETE_ENTRIES);
-        onCreate(db);
+        Log.d(TAG, "onUpgrade: " + oldVersion + "->" + newVersion);
+        if (oldVersion == 2 && newVersion == 3) {
+            // delete any null albums that dont have file saved
+            try {
+                int rowsDeleted = db.delete("simplenosql", "entityid is NULL and data NOT LIKE '%filePath%'", null);
+                Log.i(TAG, "deleted " + rowsDeleted + " rows");
+            } catch (Exception e) {
+                Log.e(TAG, e.getMessage(), e);
+            }
+
+        }
     }
 
     public <T> void saveEntity(NoSQLEntity<T> entity) {

@@ -29,7 +29,7 @@ public class SimpleNoSQLDBHelper extends SQLiteOpenHelper {
     private DataSerializer serializer;
     private DataDeserializer deserializer;
 
-    public static int DATABASE_VERSION = 2;
+    public static int DATABASE_VERSION = 3;
     public static String DATABASE_NAME = "simplenosql.db";
 
     // DB Creation
